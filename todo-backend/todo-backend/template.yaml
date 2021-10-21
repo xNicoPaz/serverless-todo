@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  todo-back-end
+
+  Sample SAM Template for todo-back-end
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  # /todos
+  #   GET    traer listado de todos
+  #   POST   crear un todo
+  ToGetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/todo_get
+      Handler: handler.lambda_handler
+      Runtime: python3.8
+      Events:
+        GetTodos:
+          Type: Api
+          Properties:
+            Path: /todos
+            Method: get
+
+  ToPostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/todo_post
+      Handler: handler.lambda_handler
+      Runtime: python3.8
+      Events:
+        PostTodos:
+          Type: Api
+          Properties:
+            Path: /todos
+            Method: post
+
+
+  # /todos/{id]
+  #   GET    traer el detalle de un todo segun id
+  #   PACH   editar un todo segun id
+  #   DELETE borrar un todo segun id
+
+
+Outputs:
+  TodoApi:
+    Description: "API Gateway endpoint URL for Prod stage for TODO app"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+

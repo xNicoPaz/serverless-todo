@@ -1,0 +1,103 @@
+import json
+import sys
+from typing import Dict
+
+import pymysql
+
+
+# Input Validation
+def validate_event(event: Dict) -> str:
+    """
+    Takes event as a Dict
+    returns email as a str
+    """
+    if not "body" in event or event["body"] is None or not "todo" in event["body"]:
+        raise Exception("missing ´todo´ field")
+
+    field = event.get("body", {})
+    # Looks for attribute
+    attribute = field.split('"')[-2]
+    if attribute == "":
+        raise Exception("field ´todo´ cant be empty")
+    return attribute
+
+# create database and table
+# conn = pymysql.connect(
+#     user="admin",
+#     password="zaregoadmin",
+#     host="database-2.c8tf9evwzkno.us-west-2.rds.amazonaws.com",
+#     port=3306
+# )
+# cursor = conn.cursor()
+# cursor.execute('''create database todolist''')
+# cursor.connection.commit()
+# cursor.execute('''use todolist''')
+# sql = '''
+# create table todo (
+# id int not null auto_increment,
+# todo text,
+# primary key (id)
+# )'''
+# cursor.execute(sql)
+# cursor.connection.commit()
+
+
+
+def lambda_handler(event, context):
+    """
+    records a entry to TODOS table.
+
+    QueryString:
+        takes a TODOMassage as a QS to ve stored in the table
+
+    Args:
+        event (Dict[str, Any]): An event is a JSON-formatted document that
+        contains information from the invoking service.
+        When you invoke a function, you determine the structure and contents
+        of the event.
+
+        context: A context object is passed to your function by Lambda at
+        runtime. This object provides methods and properties that provide
+        information about the invocation, function, and runtime environment.
+
+    Returns:
+        json: with all entries stored (in the HTTP response to the invocation
+        request, serialized into JSON).
+    """
+    # Get STR from event
+    try:
+        todo = validate_event(event)
+    except Exception as e:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({
+                "message": str(e)
+            }),
+        }
+
+    # Connect to sql Platform
+    try:
+        conn = pymysql.connect(
+            user="admin",
+            password="zaregoadmin",
+            host="database-2.c8tf9evwzkno.us-west-2.rds.amazonaws.com",
+            port=3306
+        )
+    except Exception as e:
+        print(f"Error connecting to mysql Platform: {e}")
+        sys.exit(1)
+
+    # Get Cursor
+    cursor = conn.cursor()
+    cursor.execute('''use todolist''')
+
+    sql = '''insert into todo(todo) values('%s')''' % (todo)
+    cursor.execute(sql)
+    cursor.connection.commit()
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps({
+            "message": "´{}´ added to Todo-List".format(todo)
+        }),
+    }
