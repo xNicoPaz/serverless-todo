@@ -88,16 +88,23 @@ def lambda_handler(event, context):
         sys.exit(1)
 
     # Get Cursor
-    cursor = conn.cursor()
-    cursor.execute('''use todolist''')
+    try:
+        cursor = conn.cursor()
+        cursor.execute('''use todolist''')
 
-    sql = '''insert into todo(todo) values('%s')''' % (todo)
-    cursor.execute(sql)
-    cursor.connection.commit()
+        cursor.execute('''INSERT INTO todo(todo) values('%s')''' % (todo))
+        cursor.connection.commit()
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "´{}´ added to Todo-List".format(todo)
-        }),
-    }
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": "´{}´ added to Todo-List".format(todo)
+            }),
+        }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({
+                "message": str(e)
+            }),
+        }

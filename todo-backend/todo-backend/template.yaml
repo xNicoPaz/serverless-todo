@@ -11,10 +11,7 @@ Globals:
     Timeout: 3
 
 Resources:
-  # /todos
-  #   GET    traer listado de todos
-  #   POST   crear un todo
-  ToGetFunction:
+  GetFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/todo_get
@@ -27,7 +24,7 @@ Resources:
             Path: /todos
             Method: get
 
-  ToPostFunction:
+  PostFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/todo_post
@@ -40,15 +37,26 @@ Resources:
             Path: /todos
             Method: post
 
+  IdDeleteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/todo_id_delete
+      Handler: handler.lambda_handler
+      Runtime: python3.8
+      Events:
+        PostTodos:
+          Type: Api
+          Properties:
+            Path: /todos/{id}
+            Method: delete
 
   # /todos/{id]
   #   GET    traer el detalle de un todo segun id
   #   PACH   editar un todo segun id
-  #   DELETE borrar un todo segun id
 
 
 Outputs:
   TodoApi:
     Description: "API Gateway endpoint URL for Prod stage for TODO app"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos"
 
