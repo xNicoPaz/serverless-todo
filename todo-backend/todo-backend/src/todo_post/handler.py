@@ -42,7 +42,6 @@ def validate_event(event: Dict) -> str:
 # cursor.connection.commit()
 
 
-
 def lambda_handler(event, context):
     """
     records a entry to TODOS table.

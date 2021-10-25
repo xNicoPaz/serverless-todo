@@ -50,10 +50,31 @@ Resources:
             Path: /todos/{id}
             Method: delete
 
-  # /todos/{id]
-  #   GET    traer el detalle de un todo segun id
-  #   PACH   editar un todo segun id
+  IdGetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/todo_id_get
+      Handler: handler.lambda_handler
+      Runtime: python3.8
+      Events:
+        PostTodos:
+          Type: Api
+          Properties:
+            Path: /todos/{id}
+            Method: get
 
+  IdPachFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/todo_id_pach
+      Handler: handler.lambda_handler
+      Runtime: python3.8
+      Events:
+        PostTodos:
+          Type: Api
+          Properties:
+            Path: /todos/{id}
+            Method: patch
 
 Outputs:
   TodoApi:

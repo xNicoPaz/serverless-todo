@@ -21,7 +21,7 @@ def validate_event(event: Dict) -> int:
 
 def lambda_handler(event, context):
     """
-    Deletes an entry by id from TODOS table.
+    Gets an entry by id from TODOS table.
 
     Body:
         id field
@@ -71,13 +71,12 @@ def lambda_handler(event, context):
         cursor = conn.cursor()
         cursor.execute('''USE todolist''')
 
-        cursor.execute('''DELETE FROM todo WHERE id=('%s')''' % (id))
-        cursor.connection.commit()
-
+        cursor.execute('''SELECT * FROM todo WHERE id=('%s')''' % (id))
+        message = cursor.fetchall()
         return {
             "statusCode": 200,
             "body": json.dumps({
-                "message": "´{}´ deleted from Todo-List".format(id)
+                "message": message
             }),
         }
     except Exception as e:

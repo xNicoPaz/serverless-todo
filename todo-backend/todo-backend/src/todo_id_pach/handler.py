@@ -5,23 +5,29 @@ from typing import Dict
 import pymysql
 
 # Input Validation
-def validate_event(event: Dict) -> int:
+def validate_event(event: Dict) -> Dict:
     """
     Takes event as Dict
-    returns id as  int
+    returns a Dict with id and todo
     """
     if not "pathParameters" in event or event["pathParameters"] is None or not "id" in event["pathParameters"]:
         raise Exception("missing ´id´ in path")
 
     field = event.get("pathParameters", {})
-    # Looks for attribute
-    attribute = int(field.get("id"))
-    return attribute
+    id = int(field.get("id"))
+
+    if not "body" in event or event["body"] is None or not "todo" in event["body"]:
+        raise Exception("missing ´todo´ field")
+
+    field = event.get("body", {})
+    todo = field.split('"')[-2]
+
+    return {"id": id, "todo": todo}
 
 
 def lambda_handler(event, context):
     """
-    Deletes an entry by id from TODOS table.
+    PATCHES an entry by id from TODOS table.
 
     Body:
         id field
@@ -45,7 +51,9 @@ def lambda_handler(event, context):
     
     # Get id from event
     try:
-        id = validate_event(event)
+        attributes = validate_event(event)
+        id = attributes["id"]
+        todo = attributes["todo"]
     except Exception as e:
         return {
             "statusCode": 400,
@@ -71,13 +79,13 @@ def lambda_handler(event, context):
         cursor = conn.cursor()
         cursor.execute('''USE todolist''')
 
-        cursor.execute('''DELETE FROM todo WHERE id=('%s')''' % (id))
+        cursor.execute('''UPDATE todo SET todo = ('%s') WHERE id=('%s')''' % (todo, id))
         cursor.connection.commit()
 
         return {
             "statusCode": 200,
             "body": json.dumps({
-                "message": "´{}´ deleted from Todo-List".format(id)
+                "message": "id:{} updated to {}".format(id, todo)
             }),
         }
     except Exception as e:
