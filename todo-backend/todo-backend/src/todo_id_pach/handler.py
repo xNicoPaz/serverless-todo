@@ -4,29 +4,36 @@ from typing import Dict
 import pymysql
 import sys
 
-from db_controller import TodosModel
+from cors_headers import APIHeaders
+from todo_table_model import TodosModel
 from request import Request
 
 
 # Input Validation
 def validate_event(event: Dict) -> Request:
     """
-    Takes event as Dict
-    returns a Dict with id and todo
+    Takes event as a Dict
+    returns email as a str
     """
-    if not "pathParameters" in event or event["pathParameters"] is None or not "id" in event["pathParameters"]:
-        raise Exception("missing ´id´ in path")
+    if not "body" in event or event["body"] is None or not "title" in event["body"]:
+        raise Exception("missing ´title´ field")
 
-    field = event.get("pathParameters", {})
-    id = int(field.get("id"))
-
-    if not "body" in event or event["body"] is None or not "todo" in event["body"]:
-        raise Exception("missing ´todo´ field")
+    if not "description" in event["body"]:
+        raise Exception("missing ´description´ field")
 
     field = event.get("body", {})
+    print(field)
+    # Looks for attribute
+    title = field.split('"')[3]
+    description = field.split('"')[-2]
+    if title == "":
+        raise Exception("field ´title´ cant be empty")
+    if description == "":
+        raise Exception("field ´description´ cant be empty")
 
+    # Looks for attribute
     req = Request()
-    req.title, req.id = field.split('"')[-2], int(id),
+    req.title, req.description = title, description
     return req
 
 
@@ -77,11 +84,13 @@ def lambda_handler(event, context):
         cursor = db.cursor
         cursor.execute('''USE todolist''')
 
-        cursor.execute('''UPDATE todo SET todo = ('%s') WHERE id=('%s')''' % (req.title, req.id))
+        cursor.execute('''UPDATE todo SET title = ('%s'), description = ('%s') WHERE id=('%s')''' %
+                       (req.title, req.description,req.id))
         cursor.connection.commit()
 
         return {
             "statusCode": 200,
+            "headers": APIHeaders.generate_headers(),
             "body": json.dumps({
                 "message": "id:{} updated to {}".format(req.id, req.title)
             }),

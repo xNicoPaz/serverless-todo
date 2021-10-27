@@ -4,7 +4,8 @@ from typing import Dict
 import pymysql
 import sys
 
-from db_controller import TodosModel
+from cors_headers import APIHeaders
+from todo_table_model import TodosModel
 from request import Request
 
 # Input Validation
@@ -74,6 +75,7 @@ def lambda_handler(event, context):
         message = cursor.fetchall()
         return {
             "statusCode": 200,
+            "headers": APIHeaders.generate_headers(),
             "body": json.dumps({
                 "message": message
             }),

@@ -4,7 +4,8 @@ from typing import Dict
 import pymysql
 import sys
 
-from db_controller import TodosModel
+from cors_headers import APIHeaders
+from todo_table_model import TodosModel
 from request import Request
 
 
@@ -76,6 +77,7 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
+            "headers": APIHeaders.generate_headers(),
             "body": json.dumps({
                 "message": "´{}´ deleted from Todo-List".format(req.id)
             }),

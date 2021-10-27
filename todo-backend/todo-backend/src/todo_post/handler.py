@@ -4,7 +4,8 @@ from typing import Dict
 import pymysql
 import sys
 
-from db_controller import TodosModel
+from cors_headers import APIHeaders
+from todo_table_model import TodosModel
 from request import Request
 
 # Input Validation
@@ -13,20 +14,27 @@ def validate_event(event: Dict) -> Request:
     Takes event as a Dict
     returns email as a str
     """
-    if not "body" in event or event["body"] is None or not "todo" in event["body"]:
-        raise Exception("missing ´todo´ field")
+    if not "body" in event or event["body"] is None or not "title" in event["body"]:
+        raise Exception("missing ´title´ field")
+
+    if not "description" in event["body"]:
+        raise Exception("missing ´description´ field")
 
     field = event.get("body", {})
+    print(field)
     # Looks for attribute
-    attribute = field.split('"')[-2]
-    if attribute == "":
-        raise Exception("field ´todo´ cant be empty")
+    title = field.split('"')[3]
+    description = field.split('"')[-2]
+
+    if title == "":
+        raise Exception("field ´title´ cant be empty")
+    if description == "":
+        raise Exception("field ´description´ cant be empty")
 
     # Looks for attribute
     req = Request()
-    req.title = attribute
+    req.title, req.description = title, description
     return req
-
 
 
 def lambda_handler(event, context):
@@ -56,6 +64,7 @@ def lambda_handler(event, context):
     except Exception as e:
         return {
             "statusCode": 400,
+            "headers": APIHeaders.generate_headers(),
             "body": json.dumps({
                 "message": str(e)
             }),
@@ -73,11 +82,13 @@ def lambda_handler(event, context):
         cursor = db.cursor
         cursor.execute('''use todolist''')
 
-        cursor.execute('''INSERT INTO todo(todo) values('%s')''' % (req.title))
+        cursor.execute('''INSERT INTO todo(title, description) VALUES ('%s', '%s')''' %
+                       (req.title, req.description,))
         cursor.connection.commit()
 
         return {
             "statusCode": 200,
+            "headers": APIHeaders.generate_headers(),
             "body": json.dumps({
                 "message": "´{}´ added to Todo-List".format(req.title)
             }),

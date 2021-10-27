@@ -2,7 +2,8 @@ import json
 import pymysql
 import sys
 
-from db_controller import TodosModel
+from cors_headers import APIHeaders
+from todo_table_model import TodosModel
 
 
 def lambda_handler(event, context):
@@ -27,6 +28,8 @@ def lambda_handler(event, context):
     # Connect to sql Platform
     try:
         db = TodosModel()
+        # var = db.start_database()
+        # print(var)
     except Exception as e:
         print(f"Error connecting to DB: {e}")
         sys.exit(1)
@@ -41,6 +44,7 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
+            "headers": APIHeaders.generate_headers(),
             "body": json.dumps({
                 "message": str(message)
             }),

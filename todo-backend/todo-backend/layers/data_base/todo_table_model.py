@@ -14,10 +14,8 @@ class TodosModel:
             port=3306
         )
         self.cursor = conn.cursor()
-        pass
 
-    @staticmethod
-    def start_database():
+    def start_database(self):
         # connect database
         cursor = self.cursor
         # create db
@@ -30,7 +28,7 @@ class TodosModel:
         create table todo (
         id int not null auto_increment,
         title text,
-        description,
+        description text,
         primary key (id)
         )'''
         cursor.execute(sql)

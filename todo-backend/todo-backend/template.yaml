@@ -13,6 +13,10 @@ Globals:
       - !Ref UtilsLayer
       - !Ref DataBase
   Api:
+    Auth:
+      ApiKeyRequired: true
+      UsagePlan:
+        CreateUsagePlan: PER_API
     Cors:
       AllowHeaders: "'Content-Type,Authorization,X-Api-Key'"
       AllowOrigin: "'*'"
@@ -25,6 +29,7 @@ Resources:
       CodeUri: src/todo_get
       Handler: handler.lambda_handler
       Runtime: python3.8
+      Timeout: 10
       Events:
         GetTodos:
           Type: Api
@@ -32,7 +37,7 @@ Resources:
             Path: /todos
             Method: get
 
-  CorsGetFunction:
+  CorsFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/cors
@@ -44,6 +49,8 @@ Resources:
           Properties:
             Path: /todos
             Method: options
+            Auth:
+              ApiKeyRequired: false
 
   PostFunction:
     Type: AWS::Serverless::Function
@@ -96,6 +103,21 @@ Resources:
           Properties:
             Path: /todos/{id}
             Method: patch
+
+  CorsIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/cors
+      Handler: preflight_response.lambda_handler
+      Runtime: python3.8
+      Events:
+        Preflight:
+          Type: Api
+          Properties:
+            Path: /todos/{id}
+            Method: options
+            Auth:
+              ApiKeyRequired: false
 
   UtilsLayer:
     Type: AWS::Serverless::LayerVersion
