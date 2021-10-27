@@ -9,6 +9,14 @@ Description: >
 Globals:
   Function:
     Timeout: 3
+    Layers:
+      - !Ref UtilsLayer
+      - !Ref DataBase
+  Api:
+    Cors:
+      AllowHeaders: "'Content-Type,Authorization,X-Api-Key'"
+      AllowOrigin: "'*'"
+      AllowMethods: "'OPTIONS,GET,POST,PUT,DELETE'"
 
 Resources:
   GetFunction:
@@ -23,6 +31,19 @@ Resources:
           Properties:
             Path: /todos
             Method: get
+
+  CorsGetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/cors
+      Handler: preflight_response.lambda_handler
+      Runtime: python3.8
+      Events:
+        Preflight:
+          Type: Api
+          Properties:
+            Path: /todos
+            Method: options
 
   PostFunction:
     Type: AWS::Serverless::Function
@@ -75,6 +96,26 @@ Resources:
           Properties:
             Path: /todos/{id}
             Method: patch
+
+  UtilsLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      Description: Common shared code
+      ContentUri: layers/utils_layer
+      CompatibleRuntimes:
+        - python3.8
+    Metadata:
+      BuildMethod: makefile
+
+  DataBase:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      Description: Common shared code
+      ContentUri: layers/data_base
+      CompatibleRuntimes:
+        - python3.8
+    Metadata:
+      BuildMethod: makefile
 
 Outputs:
   TodoApi:

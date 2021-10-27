@@ -2,6 +2,8 @@ import json
 import pymysql
 import sys
 
+from db_controller import TodosModel
+
 
 def lambda_handler(event, context):
     """
@@ -24,20 +26,14 @@ def lambda_handler(event, context):
     """
     # Connect to sql Platform
     try:
-        print("hello imports didnt crash")
-        conn = pymysql.connect(
-            user="admin",
-            password="zaregoadmin",
-            host="database-2.c8tf9evwzkno.us-west-2.rds.amazonaws.com",
-            port=3306
-        )
+        db = TodosModel()
     except Exception as e:
-        print(f"Error connecting to MariaDB Platform: {e}")
+        print(f"Error connecting to DB: {e}")
         sys.exit(1)
 
     # Get Cursor
     try:
-        cursor = conn.cursor()
+        cursor = db.cursor
         cursor.execute('''USE todolist''')
 
         cursor.execute('''SELECT * FROM todo''')

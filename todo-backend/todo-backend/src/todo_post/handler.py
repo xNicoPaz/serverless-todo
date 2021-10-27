@@ -1,9 +1,10 @@
 import json
 import sys
 from typing import Dict
-
 import pymysql
+import sys
 
+from db_controller import TodosModel
 
 # Input Validation
 def validate_event(event: Dict) -> str:
@@ -20,26 +21,6 @@ def validate_event(event: Dict) -> str:
     if attribute == "":
         raise Exception("field ´todo´ cant be empty")
     return attribute
-
-# create database and table
-# conn = pymysql.connect(
-#     user="admin",
-#     password="zaregoadmin",
-#     host="database-2.c8tf9evwzkno.us-west-2.rds.amazonaws.com",
-#     port=3306
-# )
-# cursor = conn.cursor()
-# cursor.execute('''create database todolist''')
-# cursor.connection.commit()
-# cursor.execute('''use todolist''')
-# sql = '''
-# create table todo (
-# id int not null auto_increment,
-# todo text,
-# primary key (id)
-# )'''
-# cursor.execute(sql)
-# cursor.connection.commit()
 
 
 def lambda_handler(event, context):
@@ -76,19 +57,14 @@ def lambda_handler(event, context):
 
     # Connect to sql Platform
     try:
-        conn = pymysql.connect(
-            user="admin",
-            password="zaregoadmin",
-            host="database-2.c8tf9evwzkno.us-west-2.rds.amazonaws.com",
-            port=3306
-        )
+        db = TodosModel()
     except Exception as e:
-        print(f"Error connecting to mysql Platform: {e}")
+        print(f"Error connecting to DB: {e}")
         sys.exit(1)
 
     # Get Cursor
     try:
-        cursor = conn.cursor()
+        cursor = db.cursor
         cursor.execute('''use todolist''')
 
         cursor.execute('''INSERT INTO todo(todo) values('%s')''' % (todo))

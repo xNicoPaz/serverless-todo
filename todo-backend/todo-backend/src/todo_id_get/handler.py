@@ -1,8 +1,10 @@
 import json
 import sys
 from typing import Dict
-
 import pymysql
+import sys
+
+from db_controller import TodosModel
 
 # Input Validation
 def validate_event(event: Dict) -> int:
@@ -56,19 +58,14 @@ def lambda_handler(event, context):
 
     # Connect to sql Platform
     try:
-        conn = pymysql.connect(
-            user="admin",
-            password="zaregoadmin",
-            host="database-2.c8tf9evwzkno.us-west-2.rds.amazonaws.com",
-            port=3306
-        )
+        db = TodosModel()
     except Exception as e:
-        print(f"Error connecting to mysql Platform: {e}")
+        print(f"Error connecting to DB: {e}")
         sys.exit(1)
 
     # Get Cursor
     try:
-        cursor = conn.cursor()
+        cursor = db.cursor
         cursor.execute('''USE todolist''')
 
         cursor.execute('''SELECT * FROM todo WHERE id=('%s')''' % (id))
