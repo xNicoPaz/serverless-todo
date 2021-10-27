@@ -5,6 +5,7 @@ import pymysql
 import sys
 
 from db_controller import TodosModel
+from request import Request
 
 # Input Validation
 def validate_event(event: Dict) -> int:
@@ -17,8 +18,9 @@ def validate_event(event: Dict) -> int:
 
     field = event.get("pathParameters", {})
     # Looks for attribute
-    attribute = int(field.get("id"))
-    return attribute
+    req = Request()
+    req.id = int(field.get("id"))
+    return req
 
 
 def lambda_handler(event, context):
@@ -47,7 +49,7 @@ def lambda_handler(event, context):
     
     # Get id from event
     try:
-        id = validate_event(event)
+        req = validate_event(event)
     except Exception as e:
         return {
             "statusCode": 400,
@@ -68,7 +70,7 @@ def lambda_handler(event, context):
         cursor = db.cursor
         cursor.execute('''USE todolist''')
 
-        cursor.execute('''SELECT * FROM todo WHERE id=('%s')''' % (id))
+        cursor.execute('''SELECT * FROM todo WHERE id=('%s')''' % (req.id))
         message = cursor.fetchall()
         return {
             "statusCode": 200,

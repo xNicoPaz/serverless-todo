@@ -5,9 +5,11 @@ import pymysql
 import sys
 
 from db_controller import TodosModel
+from request import Request
+
 
 # Input Validation
-def validate_event(event: Dict) -> Dict:
+def validate_event(event: Dict) -> Request:
     """
     Takes event as Dict
     returns a Dict with id and todo
@@ -22,9 +24,10 @@ def validate_event(event: Dict) -> Dict:
         raise Exception("missing ´todo´ field")
 
     field = event.get("body", {})
-    todo = field.split('"')[-2]
 
-    return {"id": id, "todo": todo}
+    req = Request()
+    req.title, req.id = field.split('"')[-2], int(id),
+    return req
 
 
 def lambda_handler(event, context):
@@ -53,9 +56,7 @@ def lambda_handler(event, context):
     
     # Get id from event
     try:
-        attributes = validate_event(event)
-        id = attributes["id"]
-        todo = attributes["todo"]
+        req = validate_event(event)
     except Exception as e:
         return {
             "statusCode": 400,
@@ -76,13 +77,13 @@ def lambda_handler(event, context):
         cursor = db.cursor
         cursor.execute('''USE todolist''')
 
-        cursor.execute('''UPDATE todo SET todo = ('%s') WHERE id=('%s')''' % (todo, id))
+        cursor.execute('''UPDATE todo SET todo = ('%s') WHERE id=('%s')''' % (req.title, req.id))
         cursor.connection.commit()
 
         return {
             "statusCode": 200,
             "body": json.dumps({
-                "message": "id:{} updated to {}".format(id, todo)
+                "message": "id:{} updated to {}".format(req.id, req.title)
             }),
         }
     except Exception as e:

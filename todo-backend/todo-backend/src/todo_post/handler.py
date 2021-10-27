@@ -5,9 +5,10 @@ import pymysql
 import sys
 
 from db_controller import TodosModel
+from request import Request
 
 # Input Validation
-def validate_event(event: Dict) -> str:
+def validate_event(event: Dict) -> Request:
     """
     Takes event as a Dict
     returns email as a str
@@ -20,7 +21,12 @@ def validate_event(event: Dict) -> str:
     attribute = field.split('"')[-2]
     if attribute == "":
         raise Exception("field ´todo´ cant be empty")
-    return attribute
+
+    # Looks for attribute
+    req = Request()
+    req.title = attribute
+    return req
+
 
 
 def lambda_handler(event, context):
@@ -46,7 +52,7 @@ def lambda_handler(event, context):
     """
     # Get STR from event
     try:
-        todo = validate_event(event)
+        req = validate_event(event)
     except Exception as e:
         return {
             "statusCode": 400,
@@ -67,13 +73,13 @@ def lambda_handler(event, context):
         cursor = db.cursor
         cursor.execute('''use todolist''')
 
-        cursor.execute('''INSERT INTO todo(todo) values('%s')''' % (todo))
+        cursor.execute('''INSERT INTO todo(todo) values('%s')''' % (req.title))
         cursor.connection.commit()
 
         return {
             "statusCode": 200,
             "body": json.dumps({
-                "message": "´{}´ added to Todo-List".format(todo)
+                "message": "´{}´ added to Todo-List".format(req.title)
             }),
         }
     except Exception as e:
