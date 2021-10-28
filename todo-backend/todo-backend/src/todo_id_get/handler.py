@@ -1,6 +1,6 @@
 import json
 import sys
-from typing import Dict
+from typing import Dict, Any
 import pymysql
 import sys
 
@@ -50,7 +50,7 @@ def lambda_handler(event, context):
     
     # Get id from event
     try:
-        req = validate_event(event)
+        req: Int = validate_event(event)
     except Exception as e:
         return {
             "statusCode": 400,
@@ -71,16 +71,14 @@ def lambda_handler(event, context):
         cursor = db.cursor
         cursor.execute('''USE todolist''')
 
-        cursor.execute('''SELECT * FROM todo WHERE id=('%s')''' % (req.id))
+        cursor.execute('''SELECT * FROM todo WHERE id=('{}')'''.format(req.id))
         data = cursor.fetchall()
         items = data[0]
-        message = {"id":items[0],"title":items[1],"description":items[2]}
+        message = {"id": items[0], "title": items[1], "description": items[2]}
         return {
             "statusCode": 200,
             "headers": APIHeaders.generate_headers(),
-            "body": json.dumps({
-                "entries": message
-            }),
+            "body": json.dumps(str(message)),
         }
     except Exception as e:
         return {

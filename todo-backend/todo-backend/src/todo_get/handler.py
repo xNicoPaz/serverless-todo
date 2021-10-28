@@ -44,14 +44,12 @@ def lambda_handler(event, context):
         data: List = cursor.fetchall()
         message: List[dict] = []
         for items in data:
-            message.append({"id":items[0],"title":items[1],"description":items[2]})
+            message.append({"id": items[0], "title": items[1], "description": items[2]})
 
         return {
             "statusCode": 200,
             "headers": APIHeaders.generate_headers(),
-            "body": json.dumps({
-                "entries": str(message)
-            }),
+            "body": json.dumps(str(message)),
         }
     except Exception as e:
         return {
