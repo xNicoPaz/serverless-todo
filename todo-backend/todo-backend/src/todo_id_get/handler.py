@@ -72,12 +72,14 @@ def lambda_handler(event, context):
         cursor.execute('''USE todolist''')
 
         cursor.execute('''SELECT * FROM todo WHERE id=('%s')''' % (req.id))
-        message = cursor.fetchall()
+        data = cursor.fetchall()
+        items = data[0]
+        message = {"id":items[0],"title":items[1],"description":items[2]}
         return {
             "statusCode": 200,
             "headers": APIHeaders.generate_headers(),
             "body": json.dumps({
-                "message": message
+                "entries": message
             }),
         }
     except Exception as e:

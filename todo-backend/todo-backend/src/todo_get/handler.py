@@ -1,6 +1,7 @@
 import json
 import pymysql
 import sys
+from typing import List
 
 from cors_headers import APIHeaders
 from todo_table_model import TodosModel
@@ -40,13 +41,16 @@ def lambda_handler(event, context):
         cursor.execute('''USE todolist''')
 
         cursor.execute('''SELECT * FROM todo''')
-        message = cursor.fetchall()
+        data: List = cursor.fetchall()
+        message: List[dict] = []
+        for items in data:
+            message.append({"id":items[0],"title":items[1],"description":items[2]})
 
         return {
             "statusCode": 200,
             "headers": APIHeaders.generate_headers(),
             "body": json.dumps({
-                "message": str(message)
+                "entries": str(message)
             }),
         }
     except Exception as e:
