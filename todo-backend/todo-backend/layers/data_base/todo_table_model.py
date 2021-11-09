@@ -1,4 +1,28 @@
 import pymysql
+import boto3
+import json
+
+
+def get_secret():
+    """
+    Access to SecretManager
+
+    Returns:
+         json: value of SecretString
+    """
+    secret_name = "TODO-Secrets"
+    region_name = "us-west-2"
+
+    # Create a Secrets Manager client
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
+    )
+    response = client.get_secret_value(
+        SecretId=secret_name
+    )
+    return json.loads(response["SecretString"])
 
 
 class TodosModel:
@@ -6,12 +30,15 @@ class TodosModel:
     model for todos-table
     """
     def __init__(self):
+
+        sec = get_secret()
+
         # create database connection
         conn = pymysql.connect(
-            user="admin",
-            password="zaregoadmin",
-            host="database-2.ceel3tfeb3zg.us-west-2.rds.amazonaws.com",
-            port=3306
+            user=sec["username"],
+            password=sec["password"],
+            host=sec["host"],
+            port=sec["port"]
         )
         self.cursor = conn.cursor()
 

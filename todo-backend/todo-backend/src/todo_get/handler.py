@@ -1,5 +1,4 @@
 import json
-import pymysql
 import sys
 from typing import List
 
@@ -29,8 +28,6 @@ def lambda_handler(event, context):
     # Connect to sql Platform
     try:
         db = TodosModel()
-        # var = db.start_database()
-        # print(var)
     except Exception as e:
         print(f"Error connecting to DB: {e}")
         sys.exit(1)
