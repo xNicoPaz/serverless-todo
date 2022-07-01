@@ -3,8 +3,10 @@ version = 0.1
 [default.deploy]
 [default.deploy.parameters]
 stack_name = "todo-backend"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-fjxizzdjhtpj"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-128lxnmcqejnv"
 s3_prefix = "todo-backend"
-region = "us-west-2"
+region = "us-west-1"
 capabilities = "CAPABILITY_IAM"
 image_repositories = []
+profile = "demo"
+confirm_changeset = true
